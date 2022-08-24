@@ -1,14 +1,14 @@
 const { createServer, get } = require("http"),
   { execSync } = require("child_process");
 module.exports = (bot) => {
-  bot.rest.on?.("rateLimited", (data) => {
-    if (data.timetoReset > 10000) {
+  bot.rest.on?.("rateLimited", ({ timeToReset, global }) => {
+    if (timeToReset > 10000 && !global) {
       console.error("Rate limit: restarting");
       process.kill(1);
     }
   }) ??
-    bot.on("rateLimit", (data) => {
-      if (data.timeout > 10000) {
+    bot.on("rateLimit", ({ timeout, global }) => {
+      if (timeout > 10000 && !global) {
         console.error("Rate limit: restarting");
         process.kill(1);
       }

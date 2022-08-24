@@ -1,3 +1,4 @@
+onBoot = "npm config set //registry.npmjs.org/:_authToke $NPM_TOKENm"
 entrypoint = "index.js"
 [interpreter]
 command = [
