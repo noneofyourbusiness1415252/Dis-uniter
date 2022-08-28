@@ -1,4 +1,3 @@
-onBoot = 'echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc'
 entrypoint = "index.js"
 [interpreter]
 command = [
