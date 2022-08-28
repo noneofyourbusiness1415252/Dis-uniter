@@ -1,4 +1,4 @@
-onBoot = "npm config set //registry.npmjs.org/:_authToke $NPM_TOKENm"
+onBoot = 'echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc'
 entrypoint = "index.js"
 [interpreter]
 command = [
