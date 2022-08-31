@@ -1,12 +1,13 @@
 {
-  "name": "replit-dis-uniter",
-  "version": "1.3.0",
-  "description": "Replit Discord bot keep-alive",
-  "keywords": [
-    "discord",
-    "replit",
-    "keep-alive"
-  ],
+	"name": "replit-dis-uniter",
+	"version": "1.3.1",
+	"description": "Replit Discord bot keep-alive",
+	"keywords": [
+		"discord",
+		"replit",
+		"keep-alive"
+	],
+	"author": "Umar Sharief",
   "homepage": "https://Disuniter.umarismyname.repl.co",
   "bugs": {
     "url": "https://github.com/noneofyourbusiness1415252/Dis-uniter/issues/new/choose",
@@ -17,8 +18,8 @@
     "type": "git",
     "url": "https://github.com/noneofyourbusiness1415252/Dis-uniter"
   },
-  "license": "ISC",
-  "devDependencies": {
-    "discord.js": ">=13"
-  }
+	"license": "ISC",
+	"devDependencies": {
+		"discord.js": ">=13"
+	}
 }

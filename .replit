@@ -13,6 +13,7 @@ channel = "unstable"
 
 [env]
 XDG_CONFIG_HOME = "/home/runner/.config"
+PUBLISH = "npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN; npm publish"
 
 [packager]
 language = "nodejs"
