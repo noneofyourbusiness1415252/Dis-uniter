@@ -1,17 +1,24 @@
 const { createServer, get } = require("http"),
   { execSync } = require("child_process"),
-  { env } = process, { loadavg } = require("os");
+  { env } = process,
+  { loadavg } = require("os");
 module.exports = (/**@type{Client}*/ bot) => {
   bot.rest.on?.("rateLimited", ({ timeToReset, global }) => {
     if (timeToReset > 10000 && !global) {
-      console.error("Rate limit: restarting");
-      process.kill(1);
+      process.emitWarning("Rate limit: restarting");
+      get(
+        `http://cd594a2f-0e9f-48f1-b3eb-e7f6e8665adf.id.repl.co/${env.REPL_ID}`,
+        () => process.kill(1)
+      );
     }
   }) ??
     bot.on("rateLimit", ({ timeout, global }) => {
       if (timeout > 10000 && !global) {
-        console.error("Rate limit: restarting");
-        process.kill(1);
+        process.emitWarning("Rate limit: restarting");
+        get(
+          `http://cd594a2f-0e9f-48f1-b3eb-e7f6e8665adf.id.repl.co/${env.REPL_ID}`,
+          () => process.kill(1)
+        );
       }
     });
   bot.once("ready", async () => {
@@ -54,9 +61,9 @@ module.exports = (/**@type{Client}*/ bot) => {
         )}<tr><td>RAM<td>${`${execSync("ps hx -o rss")}`
           .split("\n")
           .map(Number)
-          .reduce(
-            (a, b) => a + b
-          )}B<tr><td>CPU load<td>${loadavg()[0]}<tr><td>Owner<td><img src=${owner.displayAvatarURL()} alt><a href=https://discord.com/users/${
+          .reduce((a, b) => a + b)}B<tr><td>CPU load<td>${
+          loadavg()[0]
+        }<tr><td>Owner<td><img src=${owner.displayAvatarURL()} alt><a href=https://discord.com/users/${
           owner.id
         }>${owner.tag}<img src=${owner.banner} alt>`
       );
@@ -66,7 +73,7 @@ module.exports = (/**@type{Client}*/ bot) => {
       )
     );
     get(
-      `https://ced0775a-02a8-41d5-a6cf-14815ad4a73e.id.repl.co
+      `http://ced0775a-02a8-41d5-a6cf-14815ad4a73e.id.repl.co
 /add?repl=${env.REPL_SLUG}&author=${env.REPL_OWNER}`
     );
     process.stdin.on("data", () => {
