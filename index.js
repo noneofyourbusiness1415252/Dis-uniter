@@ -1,4 +1,5 @@
-const { createServer, get } = require("http"),
+const { createServer } = require("http"),
+  { get } = require("https"),
   { execSync } = require("child_process"),
   { env } = process,
   { loadavg } = require("os");
@@ -16,7 +17,7 @@ module.exports = (/**@type{Client}*/ bot) => {
       if (timeout > 10000 && !global) {
         process.emitWarning("Rate limit: restarting");
         get(
-          `http://cd594a2f-0e9f-48f1-b3eb-e7f6e8665adf.id.repl.co/${env.REPL_ID}`,
+          `https://cd594a2f-0e9f-48f1-b3eb-e7f6e8665adf.id.repl.co/${env.REPL_ID}`,
           () => process.kill(1)
         );
       }
@@ -73,7 +74,7 @@ module.exports = (/**@type{Client}*/ bot) => {
       )
     );
     get(
-      `http://ced0775a-02a8-41d5-a6cf-14815ad4a73e.id.repl.co
+      `https://ced0775a-02a8-41d5-a6cf-14815ad4a73e.id.repl.co
 /add?repl=${env.REPL_SLUG}&author=${env.REPL_OWNER}`
     );
     process.stdin.on("data", () => {

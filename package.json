@@ -1,24 +1,30 @@
 {
-	"name": "replit-dis-uniter",
-	"version": "1.5.0",
-	"description": "Replit Discord bot keep-alive",
-	"keywords": [
-		"discord",
-		"replit",
-		"keep-alive"
-	],
-	"author": "Umar Sharief <umar.sharief04@gmail.com> (https://umarismyname.repl.co/)",
-	"homepage": "https://626110f0-d408-475b-9830-1d15b93582e1.id.repl.co",
-	"bugs": {
-		"url": "https://github.com/noneofyourbusiness1415252/Dis-uniter/issues/new?template=bug_report.md",
-		"email": "umar.sharief04@gmail.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/noneofyourbusiness1415252/Dis-uniter"
-	},
-	"license": "ISC",
-	"devDependencies": {
-		"discord.js": ">=13"
-	}
+  "name": "replit-dis-uniter",
+  "version": "1.5.1",
+  "description": "Replit Discord bot keep-alive",
+  "keywords": [
+    "discord",
+    "replit",
+    "keep-alive"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN"
+  },
+  "author": "Umar Sharief <umar.sharief04@gmail.com> (https://umarismyname.repl.co/)",
+  "homepage": "https://626110f0-d408-475b-9830-1d15b93582e1.id.repl.co",
+  "bugs": {
+    "url": "https://github.com/noneofyourbusiness1415252/Dis-uniter/issues/new?template=bug_report.md",
+    "email": "umar.sharief04@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/noneofyourbusiness1415252/Dis-uniter"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "discord.js": ">=13"
+  },
+  "dependencies": {
+    "rusty-webserver-linux-x64-gnu": "^0.0.1"
+  }
 }
