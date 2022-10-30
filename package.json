@@ -1,6 +1,6 @@
 {
   "name": "replit-dis-uniter",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "description": "Replit Discord bot keep-alive",
   "keywords": [
     "discord",
@@ -8,7 +8,7 @@
     "keep-alive"
   ],
   "scripts": {
-    "publish": "prettier . -w\nnpm config set //registry.npmjs.org/:_authToken $NPM_TOKEN\nnpm publish"
+    "prepublishOnly": "prettier . -w\nnpm config set //registry.npmjs.org/:_authToken $NPM_TOKEN"
   },
   "author": "Umar Sharief <umar.sharief04@gmail.com> (https://umarismyname.repl.co/)",
   "homepage": "https://626110f0-d408-475b-9830-1d15b93582e1.id.repl.co",
