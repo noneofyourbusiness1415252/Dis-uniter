@@ -23,22 +23,22 @@ module.exports = (/**@type{Client}*/ bot) => {
       .fetch()
       .then(({ owner }) => (owner.owner?.user ?? owner).fetch());
     application.HTMLDescription = application.description
+      .replace(/&/g, "&amp")
+      .replace(/</g, "&lt")
+      .replace(/>/g, "&gt")
       .replace(
         /(?<!\\)(`(?:``|))(.+?)\1/gs,
         (_, _delim, code) =>
-          String.raw`\<pre\>${code
-            .replace(/\*|_|~~|\|\||/, "\\$&")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")}\</pre\>`
+          `<pre>${code.replace(/[*_\\]|~~|\|\|/g, "\\$&")}\</pre>`
       )
-      .replace(/(?<!\\)<(?!t:)(.+?)(?<!\\)>/g, "<a href='$1'>$1</a>")
-      .replace(/(?<!\*|\\|<pre>.*(?!<\/pre>))\*(.+?)(?<!\*|\\)\*/g, "<i>$1</i>")
+      .replace(/&lt(.+:\/\/[^\w]*)&gt/g, "<a href='$1'>$1</a>")
       .replace(/(?<!\\)\*\*(.+?)(?<!\\)\*\*/g, "<b>$1</b>")
-      .replace(/(?<!\\)_(.+?)(?<!\\)_/g, "<u>$1</u>")
+      .replace(/(?<!\\)([*^])(.+?)(?<!\\)\1/g, "<i>$2</i>")
+      .replace(/(?<!\\)__(.+?)(?<!\\)__/g, "<u>$1</u>")
       .replace(/(?<!\\)~~(.+?)(?<!\\)~~/g, "<strike>$1</strike>")
       .replace(/(?<!\\)\|\|(.+?)(?<!\\)\|\|/g, "<details>$1</details>")
-      .replace(/^>>>(.+)/ms, "<blockquote><p>$1</blockquote>")
-      .replace(/^> (.+?)/gm, "<blockquote><p>$1</blockquote>")
+      .replace(/^&gt&gt&gt (.+)/ms, "<blockquote><p>$1</blockquote>")
+      .replace(/^&lt (.+?)/gm, "<blockquote><p>$1</blockquote>")
       .replace(/\\/g, "");
     const { installParams, customInstallURL } = application;
     application.install = customInstallURL
@@ -108,23 +108,19 @@ module.exports = (/**@type{Client}*/ bot) => {
       owner = application.owner.owner?.user ?? application.owner;
       res.writeHead(200, {
         "Content-Type": "text/html;charset=utf-8",
-        "Cache-Control": req.url == "/" ? "no-cache" : "max-age=180",
+        "Cache-Control": "no-cache",
         "X-Content-Type-Options": "nosniff",
       });
       res.end(
         {
           err: `${`${readFileSync("/proc/meminfo")}`.match(
             /(?<=le:.*)\d+/
-          )}B${`${readFileSync("log")}`
-            .split(
-              `
-`
-            )
-            .filter((line) => line[0] == "⚠").join(`
-`)}`,
+          )}kB${`${readFileSync("log")}`
+            .match(/^⚠ .*/m)?.join(`
+`) ?? ""}`,
           dbg: `${`${readFileSync("/proc/meminfo")}`.match(
             /(?<=le:.*)\d+/
-          )}B${readFileSync("log")}`,
+          )}kB${readFileSync("log")}`,
           "": `<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'><meta name=description content='${
             application.description
           }'><meta name=author content='${owner}'><meta name=twitter:image content=${user.avatarURL(
@@ -155,16 +151,16 @@ module.exports = (/**@type{Client}*/ bot) => {
             owner.banner
           } alt><tr><th>RAM available<td>${`${readFileSync(
             "/proc/meminfo"
-          )}`.match(/(?<=le:.*)\d+/)}</table>${
+          )}`.match(/(?<=le:.*)\d+/)}kB</table>${
             application.install
-          }<p></div><div id=v><button type=button id=s onclick="document.getElementById('s').innerText=\`\${document.getElementById('s').innerText[0]=='S'?'Hide':'Show'} debug\`">Show debug</button><p><pre id=l></div><script>try{let n,t;function l(){let x=new XMLHttpRequest();x.open("GET",document.getElementById('s').innerText[0]=='S'?'err':'dbg');x.onload=r=>{document.getElementById('l').innerText=r.srcElement.responseText.replace(/.+?B/, r=>{document.querySelector("tr:last-of-type td").innerText=r;return""}).replace(/\w*([0-9]+): /g,(_, d)=>\`$\{new Date(d/1).toLocaleString()\}: \`)};x.send()};document.onvisibilitychange=()=>{if(document.visibilityState=="hidden")clearInterval(n);else n=setInterval(l,5e3)};document.getElementById('r').textContent=new Date(${
+          }<p></div><div id=v><button type=button id=s onclick="document.getElementById('s').innerText=\`\${document.getElementById('s').innerText[0]=='S'?'Hide':'Show'} debug\`">Show debug</button><p><pre id=l></div><script>try{let n,t;function l(){let x=new XMLHttpRequest();x.open("GET",document.getElementById('s').innerText[0]=='S'?'err':'dbg');x.onload=r=>{document.getElementById('l').innerText=r.srcElement.responseText.replace(/.+?B/, r=>{document.querySelector("tr:last-of-type td").innerText=r;return""}).replace(/([0-9]+): /g,(_, d)=>\`$\{new Date(d/1).toLocaleString()\}: \`)};x.send()};document.onvisibilitychange=()=>{if(document.visibilityState=="hidden")clearInterval(n);else n=setInterval(l,5e3)};document.getElementById('r').textContent=new Date(${
             bot.readyTimestamp
           }).toLocaleString();setInterval(()=>{let u=BigInt(Math.floor((Date.now()-${
             bot.readyTimestamp
-          })/1000));document.getElementById('u').innerText=\`\${u>86400n?\`\${u/86400n}d\`:''}\${u>3600n?\`\${u/3600n%60n}h\`:''}\${u>60n?\`\${u/60n%24n}m\`:''}\${\`\${u%60n}\`}s\`}, 1000);;n=setInterval(l,5e3);let d=document.getElementById('d'),f=new Intl.RelativeTimeFormat();d.innerHTML=\`${application.HTMLDescription.replace(
+          })/1000));document.getElementById('u').innerText=\`\${u>86400n?\`\${u/86400n}d\`:''}\${u>3600n?\`\${u/3600n%60n}h\`:''}\${u>60n?\`\${u/60n%24n}m\`:''}\${\`\${u%60n}\`}s\`}, 1000);n=setInterval(l,5e3);let d=document.getElementById('d'),f=new Intl.RelativeTimeFormat();d.innerHTML=\`${application.HTMLDescription.replace(
             /`/g,
             "\\`"
-          )}\`.replace(/<t:(\\d+):R>/g,(_,t)=>{const r=t-Date.now(),a=Math.abs(r);return \`<abbr title="\${new Date(t/1).toLocaleString(0,{timeStyle:"short",dateStyle:"full"})}">\${a>31536e6?f.format(r/31536e6,"year"):a>7884e6?f.format(r/7884e6,"quarter"):a>2628e6?f.format(r/2628e6,"month"):a>6048e5?f.format(r/6048e5,"week"):a>864e5?f.format(r/864e5,"day"):a>36e5?f.format(r/36e5,"hour"):a>6e4?f.format(r/6e4,"minute"):f.format(r/1e3,"second")}</abbr>\`}).replace(/<t:(\\d+)(:[tdf])?>/gi,(_,t,m)=>{const d=Date.prototype.toLocaleString.bind(new Date(t/1),0);m=m?.[1];return \`<abbr title="\${d({timeStyle:"short",dateStyle:"full"})}">\${d({timeStyle:{t:"short",T:"long"}[m],dateStyle:{d:"short",D:"long"}[m]})}</abbr>\`})}catch(err){open(\`data:text/plain,\${err}\`,"_blank")}</script>`,
+          )}\`.replace(/&ltt:(\\d+):R&gt/g,(_,t)=>{const r=t-Date.now(),a=Math.abs(r);return \`<abbr title="\${new Date(t/1).toLocaleString(0,{timeStyle:"short",dateStyle:"full"})}">\${a>31536e6?f.format(r/31536e6,"year"):a>7884e6?f.format(r/7884e6,"quarter"):a>2628e6?f.format(r/2628e6,"month"):a>6048e5?f.format(r/6048e5,"week"):a>864e5?f.format(r/864e5,"day"):a>36e5?f.format(r/36e5,"hour"):a>6e4?f.format(r/6e4,"minute"):f.format(r/1e3,"second")}</abbr>\`}).replace(/&ltt:(\\d+)(:[tdf])?&gt/gi,(_,t,m)=>{const d=Date.prototype.toLocaleString.bind(new Date(t/1),0);m=m?.[1];return \`<abbr title="\${d({timeStyle:"short",dateStyle:"full"})}">\${d({timeStyle:{t:"short",T:"long"}[m],dateStyle:{d:"short",D:"long"}[m]})}</abbr>\`})}catch(err){open(\`data:text/plain,\${err}\`,"_blank")}</script>`,
         }[req.url.slice(1)]
       );
     }).listen(80, "", () =>
