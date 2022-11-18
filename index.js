@@ -106,9 +106,10 @@ module.exports = (/**@type{Client}*/ bot) => {
     const { application, user, presence } = bot;
     createServer((req, res) => {
       const locale = req.headers["accept-language"]?.match(/.*?(?=,)/)?.[0],
-       ramAvailable = () => `${(`${readFileSync(
-            "/proc/meminfo"
-          )}`.match(/(?<=le:.*)\d+/)/1).toLocaleString(locale)}kB`
+        ramAvailable = () =>
+          `${(
+            `${readFileSync("/proc/meminfo")}`.match(/(?<=le:.*)\d+/) / 1
+          ).toLocaleString(locale)}kB`;
       owner = application.owner.owner?.user ?? application.owner;
       res.writeHead(200, {
         "Content-Type": "text/html;charset=utf-8",
@@ -117,9 +118,10 @@ module.exports = (/**@type{Client}*/ bot) => {
       });
       res.end(
         {
-          err: `${ramAvailable()}${`${readFileSync("log")}`
-            .match(/^⚠ .*/m)?.join(`
-`) ?? ""}`,
+          err: `${ramAvailable()}${
+            `${readFileSync("log")}`.match(/^⚠ .*/m)?.join(`
+`) ?? ""
+          }`,
           dbg: `${ramAvailable()}${readFileSync("log")}`,
           "": `<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'><meta name=description content='${
             application.description
@@ -133,11 +135,11 @@ module.exports = (/**@type{Client}*/ bot) => {
             user.tag
           }<img src='${bot.user.avatarURL({
             extension: "png",
-          })}'alt></h1><p id=d><table><tr><th>Guilds<td>${
-            bot.guilds.cache.size.toLocaleString(locale)
-          }<tr><th>Ping<td>${
-            bot.ws.ping.toLocaleString(locale)
-          }ms<tr><th>Up since<td id=r><tr><th>Uptime<td id=u><tr><th>Status<td>${
+          })}'alt></h1><p id=d><table><tr><th>Guilds<td>${bot.guilds.cache.size.toLocaleString(
+            locale
+          )}<tr><th>Ping<td>${bot.ws.ping.toLocaleString(
+            locale
+          )}ms<tr><th>Up since<td id=r>${new Date(bot.readyTimestamp).toISOString()}<tr><th>Uptime<td id=u><tr><th>Status<td>${
             presence.status
           }<tr><th>Activity<td>${presence.activities.join(
             "<td>"
@@ -149,7 +151,7 @@ module.exports = (/**@type{Client}*/ bot) => {
             owner.tag
           }<img src=${
             owner.banner
-          } alt><tr><th>RAM available<td>${ramAvailable()}kB</table>${
+          } alt><tr><th>RAM available<td>${ramAvailable()}</table>${
             application.install
           }<p></div><div id=v><button type=button id=s onclick="document.getElementById('s').innerText=\`\${document.getElementById('s').innerText[0]=='S'?'Hide':'Show'} debug\`">Show debug</button><p><pre id=l></div><script>try{let n,t;function l(){let x=new XMLHttpRequest();x.open("GET",document.getElementById('s').innerText[0]=='S'?'err':'dbg');x.onload=r=>{document.getElementById('l').innerText=r.srcElement.responseText.replace(/.+?B/, r=>{document.querySelector("tr:last-of-type td").innerText=r;return""}).replace(/([0-9]+): /g,(_, d)=>\`$\{new Date(d/1).toLocaleString()\}: \`)};x.send()};document.onvisibilitychange=()=>{if(document.visibilityState=="hidden")clearInterval(n);else n=setInterval(l,5e3)};document.getElementById('r').textContent=new Date(${
             bot.readyTimestamp
