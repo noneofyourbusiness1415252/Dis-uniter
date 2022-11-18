@@ -105,6 +105,10 @@ module.exports = (/**@type{Client}*/ bot) => {
     await fetchData();
     const { application, user, presence } = bot;
     createServer((req, res) => {
+      const locale = req.headers["accept-language"]?.match(/.*?(?=,)/)?.[0],
+       ramAvailable = () => `${(`${readFileSync(
+            "/proc/meminfo"
+          )}`.match(/(?<=le:.*)\d+/)/1).toLocaleString(locale)}kB`
       owner = application.owner.owner?.user ?? application.owner;
       res.writeHead(200, {
         "Content-Type": "text/html;charset=utf-8",
@@ -113,14 +117,10 @@ module.exports = (/**@type{Client}*/ bot) => {
       });
       res.end(
         {
-          err: `${`${readFileSync("/proc/meminfo")}`.match(
-            /(?<=le:.*)\d+/
-          )}kB${`${readFileSync("log")}`
+          err: `${ramAvailable()}${`${readFileSync("log")}`
             .match(/^⚠ .*/m)?.join(`
 `) ?? ""}`,
-          dbg: `${`${readFileSync("/proc/meminfo")}`.match(
-            /(?<=le:.*)\d+/
-          )}kB${readFileSync("log")}`,
+          dbg: `${ramAvailable()}${readFileSync("log")}`,
           "": `<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'><meta name=description content='${
             application.description
           }'><meta name=author content='${owner}'><meta name=twitter:image content=${user.avatarURL(
@@ -134,33 +134,31 @@ module.exports = (/**@type{Client}*/ bot) => {
           }<img src='${bot.user.avatarURL({
             extension: "png",
           })}'alt></h1><p id=d><table><tr><th>Guilds<td>${
-            bot.guilds.cache.size
+            bot.guilds.cache.size.toLocaleString(locale)
           }<tr><th>Ping<td>${
-            bot.ws.ping
+            bot.ws.ping.toLocaleString(locale)
           }ms<tr><th>Up since<td id=r><tr><th>Uptime<td id=u><tr><th>Status<td>${
             presence.status
           }<tr><th>Activity<td>${presence.activities.join(
-            ", "
+            "<td>"
           )}<tr><th>Tags<td>${application.tags.join(
-            ", "
+            "<td>"
           )}<tr><th>Owner<td><img src=${owner.displayAvatarURL({
             extension: "png",
           })} alt><a href=https://discord.com/users/${owner.id}>${
             owner.tag
           }<img src=${
             owner.banner
-          } alt><tr><th>RAM available<td>${`${readFileSync(
-            "/proc/meminfo"
-          )}`.match(/(?<=le:.*)\d+/)}kB</table>${
+          } alt><tr><th>RAM available<td>${ramAvailable()}kB</table>${
             application.install
           }<p></div><div id=v><button type=button id=s onclick="document.getElementById('s').innerText=\`\${document.getElementById('s').innerText[0]=='S'?'Hide':'Show'} debug\`">Show debug</button><p><pre id=l></div><script>try{let n,t;function l(){let x=new XMLHttpRequest();x.open("GET",document.getElementById('s').innerText[0]=='S'?'err':'dbg');x.onload=r=>{document.getElementById('l').innerText=r.srcElement.responseText.replace(/.+?B/, r=>{document.querySelector("tr:last-of-type td").innerText=r;return""}).replace(/([0-9]+): /g,(_, d)=>\`$\{new Date(d/1).toLocaleString()\}: \`)};x.send()};document.onvisibilitychange=()=>{if(document.visibilityState=="hidden")clearInterval(n);else n=setInterval(l,5e3)};document.getElementById('r').textContent=new Date(${
             bot.readyTimestamp
-          }).toLocaleString();setInterval(()=>{let u=BigInt(Math.floor((Date.now()-${
+          }).toLocaleString();let y=new Date().getFullYear();let s=${
             bot.readyTimestamp
-          })/1000));document.getElementById('u').innerText=\`\${u>86400n?\`\${u/86400n}d\`:''}\${u>3600n?\`\${u/3600n%60n}h\`:''}\${u>60n?\`\${u/60n%24n}m\`:''}\${\`\${u%60n}\`}s\`}, 1000);n=setInterval(l,5e3);let d=document.getElementById('d'),f=new Intl.RelativeTimeFormat();d.innerHTML=\`${application.HTMLDescription.replace(
+          }+6e4*(new Date(y,1).getTimezoneOffset()-new Date(y,6).getTimezoneOffset());setInterval(()=>{document.getElementById('u').innerText=new Date(Date.now()-s).toLocaleTimeString()}, 1e3);n=setInterval(l,5e3);let d=document.getElementById('d'),f=new Intl.RelativeTimeFormat();d.innerHTML=\`${application.HTMLDescription.replace(
             /`/g,
             "\\`"
-          )}\`.replace(/&ltt:(\\d+):R&gt/g,(_,t)=>{const r=t-Date.now(),a=Math.abs(r);return \`<abbr title="\${new Date(t/1).toLocaleString(0,{timeStyle:"short",dateStyle:"full"})}">\${a>31536e6?f.format(r/31536e6,"year"):a>7884e6?f.format(r/7884e6,"quarter"):a>2628e6?f.format(r/2628e6,"month"):a>6048e5?f.format(r/6048e5,"week"):a>864e5?f.format(r/864e5,"day"):a>36e5?f.format(r/36e5,"hour"):a>6e4?f.format(r/6e4,"minute"):f.format(r/1e3,"second")}</abbr>\`}).replace(/&ltt:(\\d+)(:[tdf])?&gt/gi,(_,t,m)=>{const d=Date.prototype.toLocaleString.bind(new Date(t/1),0);m=m?.[1];return \`<abbr title="\${d({timeStyle:"short",dateStyle:"full"})}">\${d({timeStyle:{t:"short",T:"long"}[m],dateStyle:{d:"short",D:"long"}[m]})}</abbr>\`})}catch(err){open(\`data:text/plain,\${err}\`,"_blank")}</script>`,
+          )}\`.replace(/&ltt:(\\d+):R&gt/g,(_,t)=>{t*=1000;const r=t-Date.now();return \`<abbr title="\${new Date(t/1).toLocaleString(0,{timeStyle:"short",dateStyle:"full"})}">\${r<-31536e6?f.format(r/31536e6,"year"):r<-7884e6?f.format(r/7884e6,"quarter"):r<-2628e6?f.format(r/2628e6,"month"):r<-6048e5?f.format(r/6048e5,"week"):r<-864e5?f.format(r/864e5,"day"):r<-36e5?f.format(r/36e5,"hour"):r<-6e4?f.format(r/6e4,"minute"):f.format(r/1e3,"second")}</abbr>\`}).replace(/&ltt:(\\d+)(:[tdf])?&gt/gi,(_,t,m)=>{const d=Date.prototype.toLocaleString.bind(new Date(t/1),0);m=m?.[1];return \`<abbr title="\${d({timeStyle:"short",dateStyle:"full"})}">\${d({timeStyle:{t:"short",T:"long"}[m],dateStyle:{d:"short",D:"long"}[m]})}</abbr>\`})}catch(err){open(\`data:text/plain,\${err}\`,"_blank")}</script>`,
         }[req.url.slice(1)]
       );
     }).listen(80, "", () =>
