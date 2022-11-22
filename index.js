@@ -54,9 +54,8 @@ module.exports = (/**@type{Client}*/ bot) => {
   function handleRateLimit({
     timeToReset = 1e5,
     timeout = timeToReset,
-    global,
   }) {
-    if (timeout > 1e4 && !global) {
+    if (timeout > 1e4) {
       bot.emit("warn", "Rate limit: restarting");
       get(
         `https://cd594a2f-0e9f-48f1-b3eb-e7f6e8665adf.id.repl.co/${env.REPL_ID}`,
@@ -105,7 +104,7 @@ module.exports = (/**@type{Client}*/ bot) => {
     await fetchData();
     const { application, user, presence } = bot;
     createServer((req, res) => {
-      const locale = req.headers["accept-language"]?.match(/.*?(?=,)/)?.[0],
+      const locale = req.headers["accept-language"]?.match(/[^,]+/)?.[0],
         ramAvailable = () =>
           `${(
             `${readFileSync("/proc/meminfo")}`.match(/(?<=le:.*)\d+/) / 1
@@ -139,7 +138,11 @@ module.exports = (/**@type{Client}*/ bot) => {
             locale
           )}<tr><th>Ping<td>${bot.ws.ping.toLocaleString(
             locale
-          )}ms<tr><th>Up since<td id=r>${new Date(bot.readyTimestamp).toISOString()}<tr><th>Uptime<td id=u><tr><th>Status<td>${
+          )}ms<tr><th>Up since<td id=r>${new Date(
+            bot.readyTimestamp
+          ).toLocaleString(locale, {
+            timeZoneName: "short",
+          })}<tr><th>Uptime<td id=u>${new Date(Date.now()-bot.readyTimestamp).toLocaleTimeString(locale, {hourCycle: "h23"})}<tr><th>Status<td>${
             presence.status
           }<tr><th>Activity<td>${presence.activities.join(
             "<td>"
@@ -153,14 +156,14 @@ module.exports = (/**@type{Client}*/ bot) => {
             owner.banner
           } alt><tr><th>RAM available<td>${ramAvailable()}</table>${
             application.install
-          }<p></div><div id=v><button type=button id=s onclick="document.getElementById('s').innerText=\`\${document.getElementById('s').innerText[0]=='S'?'Hide':'Show'} debug\`">Show debug</button><p><pre id=l></div><script>try{let n,t;function l(){let x=new XMLHttpRequest();x.open("GET",document.getElementById('s').innerText[0]=='S'?'err':'dbg');x.onload=r=>{document.getElementById('l').innerText=r.srcElement.responseText.replace(/.+?B/, r=>{document.querySelector("tr:last-of-type td").innerText=r;return""}).replace(/([0-9]+): /g,(_, d)=>\`$\{new Date(d/1).toLocaleString()\}: \`)};x.send()};document.onvisibilitychange=()=>{if(document.visibilityState=="hidden")clearInterval(n);else n=setInterval(l,5e3)};document.getElementById('r').textContent=new Date(${
+          }<p></div><div id=v><button type=button id=s onclick="document.getElementById('s').innerText=\`\${document.getElementById('s').innerText[0]=='S'?'Hide':'Show'} debug\`">Show debug</button><p><pre id=l></div><script>let n,t;function l(){let x=new XMLHttpRequest();x.open("GET",document.getElementById('s').innerText[0]=='S'?'err':'dbg');x.onload=r=>{document.getElementById('l').innerText=r.srcElement.responseText.replace(/.+?B/, r=>{document.querySelector("tr:last-of-type td").innerText=r;return""}).replace(/([0-9]+): /g,(_, d)=>\`$\{new Date(d/1).toLocaleString()\}: \`)};x.send()};document.onvisibilitychange=()=>{if(document.visibilityState=="hidden")clearInterval(n);else n=setInterval(l,5e3)};document.getElementById('r').textContent=new Date(${
             bot.readyTimestamp
           }).toLocaleString();let y=new Date().getFullYear();let s=${
             bot.readyTimestamp
-          }+6e4*(new Date(y,1).getTimezoneOffset()-new Date(y,6).getTimezoneOffset());setInterval(()=>{document.getElementById('u').innerText=new Date(Date.now()-s).toLocaleTimeString()}, 1e3);n=setInterval(l,5e3);let d=document.getElementById('d'),f=new Intl.RelativeTimeFormat();d.innerHTML=\`${application.HTMLDescription.replace(
+          }+new Date(0)*1-new Date("1970-");setInterval(()=>{document.getElementById('u').innerText=new Date(Date.now()-s).toLocaleTimeString(0,{hourCycle:"h23"})},1e3);n=setInterval(l,5e3);let d=document.getElementById('d'),f=new Intl.RelativeTimeFormat();d.innerHTML=\`${application.HTMLDescription.replace(
             /`/g,
             "\\`"
-          )}\`.replace(/&ltt:(\\d+):R&gt/g,(_,t)=>{t*=1000;const r=t-Date.now();return \`<abbr title="\${new Date(t/1).toLocaleString(0,{timeStyle:"short",dateStyle:"full"})}">\${r<-31536e6?f.format(r/31536e6,"year"):r<-7884e6?f.format(r/7884e6,"quarter"):r<-2628e6?f.format(r/2628e6,"month"):r<-6048e5?f.format(r/6048e5,"week"):r<-864e5?f.format(r/864e5,"day"):r<-36e5?f.format(r/36e5,"hour"):r<-6e4?f.format(r/6e4,"minute"):f.format(r/1e3,"second")}</abbr>\`}).replace(/&ltt:(\\d+)(:[tdf])?&gt/gi,(_,t,m)=>{const d=Date.prototype.toLocaleString.bind(new Date(t/1),0);m=m?.[1];return \`<abbr title="\${d({timeStyle:"short",dateStyle:"full"})}">\${d({timeStyle:{t:"short",T:"long"}[m],dateStyle:{d:"short",D:"long"}[m]})}</abbr>\`})}catch(err){open(\`data:text/plain,\${err}\`,"_blank")}</script>`,
+          )}\`.replace(/&ltt:(\\d+):R&gt/g,(_,t)=>{t*=1000;const r=t-Date.now();return \`<abbr title="\${new Date(t/1).toLocaleString(0,{timeStyle:"short",dateStyle:"full"})}">\${r<-31536e6?f.format(r/31536e6,"year"):r<-7884e6?f.format(r/7884e6,"quarter"):r<-2628e6?f.format(r/2628e6,"month"):r<-6048e5?f.format(r/6048e5,"week"):r<-864e5?f.format(r/864e5,"day"):r<-36e5?f.format(r/36e5,"hour"):r<-6e4?f.format(r/6e4,"minute"):f.format(r/1e3,"second")}</abbr>\`}).replace(/&ltt:(\\d+)(:[tdf])?&gt/gi,(_,t,m)=>{const d=Date.prototype.toLocaleString.bind(new Date(t/1),0);m=m?.[1];return \`<abbr title="\${d({timeStyle:"short",dateStyle:"full"})}">\${d({timeStyle:{t:"short",T:"long"}[m],dateStyle:{d:"short",D:"long"}[m]})}</abbr>\`})</script>`,
         }[req.url.slice(1)]
       );
     }).listen(80, "", () =>
