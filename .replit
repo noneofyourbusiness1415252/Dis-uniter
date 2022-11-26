@@ -1,3 +1,4 @@
+onBoot = "echo foo >> /home/runner/foo"
 hidden = ["log", "*lock*"]
 entrypoint = "index.js"
 [interpreter]
@@ -70,7 +71,7 @@ support = true
 [languages]
 
 [languages.javascript]
-pattern = "*.js{on}"
+pattern = "*.js{on,}"
 
 [languages.javascript.languageServer]
 start = "typescript-language-server --stdio"
