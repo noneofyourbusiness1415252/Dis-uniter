@@ -109,8 +109,8 @@ ${bot.ws.ping.toLocaleString(locale)}ms${bot.readyTimestamp}
         path = url.slice(1),
         /**@type{User}*/ owner =
           application.owner.owner?.user ?? application.owner;
-      if (!path) res.setHeader("Content-Type", "text/html;charset=utf-8");
       res.writeHead(200, {
+        "Content-Type": `text/html;charset=utf-8`,
         "Cache-Control": "no-cache",
         "X-Content-Type-Options": "nosniff",
       });
@@ -118,11 +118,11 @@ ${bot.ws.ping.toLocaleString(locale)}ms${bot.readyTimestamp}
         path[0] == "e"
           ? `${info()}${`${readFileSync("log")}`.replace(
               /(?:^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs,
-              (_, time) => (time ? localiseTime(time) : "\n")
+              (_, time) => (time ? localiseTime(time) : "")
             )}`
           : path[0] == "d"
           ? `${info()}${`${readFileSync("log")}`.replace(
-              /^[0-9]+/gm,
+              /^(?<=⚠?)[0-9]+/gm,
               localiseTime
             )}`
           : `<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'><meta name=description content='${
@@ -137,15 +137,15 @@ ${bot.ws.ping.toLocaleString(locale)}ms${bot.readyTimestamp}
               user.tag
             }<img src='${bot.user.avatarURL({
               extension: "png",
-            })}'alt></h1><p id=d><table><tr><th>Guilds<td>${bot.guilds.cache.size.toLocaleString(
+            })}'alt></h1><p><table><tr><th>Guilds<td>${bot.guilds.cache.size.toLocaleString(
               locale
             )}<tr><th>Ping<td>${bot.ws.ping.toLocaleString(
               locale
-            )}ms<tr><th>Up since<td id=r>${new Date(
+            )}ms<tr><th>Up since<td>${new Date(
               bot.readyTimestamp
             ).toLocaleString(locale, {
               timeZoneName: "short",
-            })}<tr><th>Uptime<td id=u>${new Date(
+            })}<tr><th>Uptime<td>${new Date(
               Date.now() - bot.readyTimestamp
             ).toLocaleTimeString(locale, {
               hourCycle: "h23",
@@ -161,7 +161,7 @@ ${bot.ws.ping.toLocaleString(locale)}ms${bot.readyTimestamp}
               owner.banner ? `<img src=${owner.bannerURL()} alt>` : ""
             }<tr><th>RAM available<td>${ramAvailable()}</table>${
               application.install
-            }<p></div><div id=v><button type=button id=s onclick="document.getElementById('s').innerText=\`\${document.getElementById('s').innerText[0]=='S'?'Hide':'Show'} debug\`">Show debug</button><p><pre id=l>${`${readFileSync(
+            }<p></div><div id=v><button type=button onclick="innerText=\`\${innerText[0]=='S'?'Hide':'Show'} debug [d]\`">Show debug [d]</button><p><pre>${`${readFileSync(
               "log"
             )}`.replace(/(?:^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs, (_, time) =>
               time
@@ -169,27 +169,27 @@ ${bot.ws.ping.toLocaleString(locale)}ms${bot.readyTimestamp}
                     timeZoneName: "short",
                   })
                 : ""
-            )}</div><script>let n,t,p=new Date(0)*1-new Date("1970-"),s=${
+            )}</div><script>onkeydown=({key})=>{if(key=="d")document.querySelector("button").click()};let n,t,p=-new Date("1970T00:00"),s=${
               bot.readyTimestamp
             }+p
 function l(){let x=new XMLHttpRequest()
-x.open("GET",\`\${document.getElementById('s').innerText[0]=='S'?'e':'d'}\${Intl.DateTimeFormat().resolvedOptions().timeZone}\`)
-x.onload=({srcElement:{responseText}})=>{document.getElementById('l').innerText=responseText.replace(/.+?B/,r=>{document.querySelector("tr:last-of-type td").innerText=r
+x.open("GET",\`\${document.querySelector('button').innerText[0]=='S'?'e':'d'}\${Intl.DateTimeFormat().resolvedOptions().timeZone}\`)
+x.onload=({srcElement:{responseText}})=>{document.querySelector("#v pre").innerText=responseText.replace(/.+?B/,r=>{document.querySelector("tr:last-of-type td").innerText=r
 return""}).replace(/.+?\\n/,g=>{document.querySelector("tr td").innerText=g
-return""}).replace(/.+?ms/,p=>{document.querySelector("tr:nth-child(2) td").innerText=p
-return""}).replace(/\\d+/,t=>{document.querySelector("tr:nth-child(3) td").innerText=new Date(t/1).toLocaleString()
-s=t/1+p
+return""}).replace(/.+?s/,p=>{document.querySelector("tr:nth-child(2) td").innerText=p
+return""}).replace(/(\\d+)\\n/,(_,t)=>{document.querySelector("tr:nth-child(3) td").innerText=new Date(t/1).toLocaleString()
+s=+t+p
 return""})}
 x.send()}
 document.onvisibilitychange=()=>{if(document.visibilityState=="hidden")clearInterval(n)
 else n=setInterval(l,5e3)}
-document.getElementById('r').textContent=new Date(${
+document.querySelector('tr:nth-child(3) td').textContent=new Date(${
               bot.readyTimestamp
             }).toLocaleString()
 let y=new Date().getFullYear()
-setInterval(()=>{document.getElementById('u').innerText=new Date(Date.now()-s).toLocaleTimeString(0,{hourCycle:"h23"})},1e3)
+setInterval(()=>{document.querySelector('tr:nth-child(4) td').innerText=new Date(Date.now()-s).toLocaleTimeString(0,{hourCycle:"h23"})},1e3)
 n=setInterval(l,5e3)
-let d=document.getElementById('d'),f=new Intl.RelativeTimeFormat()
+let d=document.querySelector("p"),f=new Intl.RelativeTimeFormat()
 d.innerHTML=\`${application.HTMLDescription.replace(
               /`/g,
               "\\`"
