@@ -1,6 +1,4 @@
 const { createServer } = require("http"),
-  { get } = require("https"),
-  { env } = process,
   { appendFileSync, readFileSync, writeFileSync } = require("fs"),
   { version } = require("./package.json");
 function clearOld() {
@@ -26,7 +24,7 @@ module.exports = (/**@type{Client}*/ bot) => {
   async function fetchData() {
     await bot.application.fetch();
     await bot.user.fetch();
-    const {
+    /**@type{{application:ClientApplication}}*/ const {
       application: { owner, installParams, customInstallURL, description, id },
     } = bot;
     (owner.owner?.user ?? owner).fetch();
@@ -55,21 +53,11 @@ module.exports = (/**@type{Client}*/ bot) => {
     install = customInstallURL
       ? `<a href=${customInstallURL}>Install</a>`
       : installParams
-      ? `<a href=https://discord.com/api/oauth2/authorize?client_id=${id}&scope=${installParams.scopes.join(
+      ? `<a href=//discord.com/api/oauth2/authorize?client_id=${id}&scope=${installParams.scopes.join(
           "+"
         )}&permissions=${installParams.permissions.bitfield}>Install</a>`
       : "";
   }
-  function handleRateLimit({ timeToReset = Infinity, timeout = timeToReset }) {
-    if (timeout > 1e4) {
-      bot.emit("warn", "Rate limit: restarting");
-      get(`https://${env.REPL_ID}.id.repl.co`);
-      process.kill(1);
-    }
-  }
-  get(`https://discord.com/api/v10/gateway`, ({ statusCode }) => {
-    if (statusCode == 429) handleRateLimit({});
-  });
   bot.on("warn", (msg) => {
     appendFileSync(
       "log",
@@ -88,8 +76,6 @@ module.exports = (/**@type{Client}*/ bot) => {
   });
   bot.on("debug", debug);
   bot.on("interactionCreate", debug);
-  bot.rest.on?.("rateLimited", handleRateLimit) ??
-    bot.on("rateLimit", handleRateLimit);
   bot.once("ready", async () => {
     await fetchData();
     const { application, user, presence } = bot;
@@ -135,7 +121,7 @@ ${presence.activities.join()}
               user.tag
             }</title><link rel=icon href=${user.displayAvatarURL({
               extension: "png",
-            })}><style>*{text-align:center;margin:0 auto}blockquote>*{border-right:4px solid #007acc80;border-left:4px solid #007acc80;display:inline;padding:4px 4px;border-radius:1px}#s{font-size:.1em}body,table{background-color:#FDF6E3;color:#657B83;font-family:sans-serif}*button{background-color:#AC9D57}h1{color:#268BD2}@media(prefers-color-scheme:dark){body,table{background-color:#002B36;color:#839496}blockquote>*{border-color:#073642}button{background-color:#2AA19899}}img{height:1em}td{border:1px}p{white-space:pre-wrap}body{display:flex;flex-flow:row wrap;width:100vw}#o,#v{overflow:auto}#o{min-width:min-content;flex:1}#v{height:100vh}button{display:inline-block}a{color:#3794ff}.d,abbr{color:#cb4b16}.i{color:#D33682}code{color:#d7ba7d}i,b{color:#D33682}</style><html lang=en><div id=o><h1>${
+            })}><style>*{text-align:center;margin:0 auto}blockquote>*{border-right:4px solid #007acc80;border-left:4px solid #007acc80;display:inline;padding:4px 4px;border-radius:1px}#s{font-size:.1em}body,table{background:#FDF6E3;color:#657B83;font-family:sans-serif}*button{background-color:#AC9D57}h1{color:#268BD2}@media(prefers-color-scheme:dark){body,table{background-color:#002B36;color:#839496}blockquote>*{border-color:#073642}button{background-color:#2AA19899}}img{height:1em}td{border:1px}p{white-space:pre-wrap}body{display:flex;flex-flow:row wrap;width:100vw}#o,#v{overflow:auto}#o{min-width:min-content;flex:1}#v{height:100vh}button{display:inline-block}a{color:#3794ff}.d,abbr{color:#cb4b16}.i{color:#D33682}code{color:#d7ba7d}i,b{color:#D33682}</style><html lang=en><div id=o><h1>${
               user.tag
             }<img src='${bot.user.avatarURL({
               extension: "png",
@@ -159,7 +145,7 @@ ${presence.activities.join()}
               {
                 extension: "png",
               }
-            )} alt><a href=https://discord.com/users/${owner.id}>${owner.tag}${
+            )} alt><a href=//discord.com/users/${owner.id}>${owner.tag}${
               owner.banner ? `<img src=${owner.bannerURL()} alt>` : ""
             }<tr><th title=RAM>🆓🔀🧠<td><span class=i id=r>${ramAvailable()}</span>kB</table>${install}<p></div><div id=v><button type=button onclick="b^=1"><kbd>d</kbd>🤏🐛</button><p><pre>${`${readFileSync(
               "log"
@@ -205,15 +191,11 @@ d.onmouseover=()=>clearInterval(u)
         `${user.tag} is alive! Hit enter at any time to update user and application info to show on the website`
       )
     );
-    get(
-      `https://ced0775a-02a8-41d5-a6cf-14815ad4a73e.id.repl.co
-/add?repl=${env.REPL_SLUG}&author=${env.REPL_OWNER}`
-    );
     process.stdin.on("data", fetchData);
   });
 };
 if (__dirname == process.cwd()) {
-  const { Client, User } = require("discord.js"),
+  const { Client, User, ClientApplication } = require("discord.js"),
     bot = new Client({ intents: 0 });
   module.exports(bot);
   bot.login();

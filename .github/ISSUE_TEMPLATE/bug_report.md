@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Repl link**
-Please send a link to your repl so I can diagnose the problem further
+So I can diagnose the problem further
 
 **Additional context**
 Add any other context about the problem here.
