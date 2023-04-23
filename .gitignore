@@ -1,3 +1,5 @@
 node_modules
 .upm
 package-lock.json
+log
+.breakpoints
