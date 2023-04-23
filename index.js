@@ -26,8 +26,10 @@ module.exports = (/**@type{Client}*/ bot) => {
   async function fetchData() {
     await bot.application.fetch();
     await bot.user.fetch();
-    const { application: {owner, installParams, customInstallURL, description, id} } = bot;
-    (owner.owner?.user ?? owner).fetch()
+    const {
+      application: { owner, installParams, customInstallURL, description, id },
+    } = bot;
+    (owner.owner?.user ?? owner).fetch();
     HTMLDescription = description
       .replace(/&/g, "&amp")
       .replace(/</g, "&lt")
@@ -53,15 +55,12 @@ module.exports = (/**@type{Client}*/ bot) => {
     install = customInstallURL
       ? `<a href=${customInstallURL}>Install</a>`
       : installParams
-      ? `<a href=https://discord.com/api/oauth2/authorize?client_id=${
-          id
-        }&scope=${installParams.scopes.join("+")}&permissions=${
-          installParams.permissions.bitfield
-        }>Install</a>`
+      ? `<a href=https://discord.com/api/oauth2/authorize?client_id=${id}&scope=${installParams.scopes.join(
+          "+"
+        )}&permissions=${installParams.permissions.bitfield}>Install</a>`
       : "";
-  
   }
-  function handleRateLimit({ timeToReset = 1e5, timeout = timeToReset }) {
+  function handleRateLimit({ timeToReset = Infinity, timeout = timeToReset }) {
     if (timeout > 1e4) {
       bot.emit("warn", "Rate limit: restarting");
       get(`https://${env.REPL_ID}.id.repl.co`);
@@ -130,9 +129,7 @@ ${presence.activities.join()}
               /(?<=^⚠?)\d+/gm,
               localiseTime
             )}`
-          : `<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'><meta name=description content='${
-              HTMLDescription
-            }'><meta name=keywords content="${application.tags.join()}"><meta name=generator content="replit-dis-uniter ${version}"><meta name=author content='${owner}'><meta name=twitter:image content=${user.avatarURL(
+          : `<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'><meta name=description content='${HTMLDescription}'><meta name=keywords content="${application.tags.join()}"><meta name=generator content="replit-dis-uniter ${version}"><meta name=author content='${owner}'><meta name=twitter:image content=${user.avatarURL(
               { extension: "png" }
             )}><title>${
               user.tag
@@ -164,9 +161,7 @@ ${presence.activities.join()}
               }
             )} alt><a href=https://discord.com/users/${owner.id}>${owner.tag}${
               owner.banner ? `<img src=${owner.bannerURL()} alt>` : ""
-            }<tr><th title=RAM>🆓🔀🧠<td><span class=i id=r>${ramAvailable()}</span>kB</table>${
-              install
-            }<p></div><div id=v><button type=button onclick="b^=1"><kbd>d</kbd>🤏🐛</button><p><pre>${`${readFileSync(
+            }<tr><th title=RAM>🆓🔀🧠<td><span class=i id=r>${ramAvailable()}</span>kB</table>${install}<p></div><div id=v><button type=button onclick="b^=1"><kbd>d</kbd>🤏🐛</button><p><pre>${`${readFileSync(
               "log"
             )}`.replace(/(?<=^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs, (_, time) =>
               time
@@ -175,7 +170,7 @@ ${presence.activities.join()}
                   })
                 : ""
             )}</div><script>onkeydown=({key})=>{if(key=="d")document.querySelector("button").click()}
-let t,n,u,p=-new Date("1970T00:00"),s=${bot.readyTimestamp}+p
+let b,t,n,u,p=-new Date("1970T00:00"),s=${bot.readyTimestamp}+p
 function l(){let x=new XMLHttpRequest()
 x.open("GET",\`\${b?'d':'e'}\${Intl.DateTimeFormat().resolvedOptions().timeZone}\`)
 x.onload=({srcElement:{responseText}})=>{document.querySelector("#v pre").innerText=responseText.replace(/.+?\\n/,a=>{r.innerText=a
@@ -221,5 +216,5 @@ if (__dirname == process.cwd()) {
   const { Client, User } = require("discord.js"),
     bot = new Client({ intents: 0 });
   module.exports(bot);
-  bot.login()
+  bot.login();
 }
