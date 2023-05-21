@@ -1,4 +1,3 @@
-onBoot = "echo foo >> /home/runner/foo"
 hidden = ["log", "*lock*"]
 entrypoint = "index.js"
 [interpreter]

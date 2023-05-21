@@ -1,6 +1,7 @@
 const { createServer } = require("http"),
   { appendFileSync, readFileSync, writeFileSync } = require("fs"),
-  { version } = require("./package.json");
+  { version, name } = require("./package.json");
+/**Clear logs from ./log older than a day*/
 function clearOld() {
   const dayAgo = Date.now() - 864e5;
   writeFileSync(
@@ -20,7 +21,7 @@ function debug(msg) {
   clearOld();
 }
 let HTMLDescription, install;
-module.exports = (/**@type{Client}*/ bot) => {
+module.exports = (/**@type{Client<false>}*/ bot) => {
   async function fetchData() {
     await bot.application.fetch();
     await bot.user.fetch();
@@ -115,7 +116,7 @@ ${presence.activities.join()}
               /(?<=^⚠?)\d+/gm,
               localiseTime
             )}`
-          : `<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'><meta name=description content='${HTMLDescription}'><meta name=keywords content="${application.tags.join()}"><meta name=generator content="replit-dis-uniter ${version}"><meta name=author content='${owner}'><meta name=twitter:image content=${user.avatarURL(
+          : `<!DOCTYPE html><meta charset=utf-8><meta name=viewport content=width=device-width><meta name=description content='${HTMLDescription}'><meta name=keywords content="${application.tags.join()}"><meta name=generator content="${name} ${version}"><meta name=author content='${owner}'><meta name=og:image content=${user.avatarURL(
               { extension: "png" }
             )}><title>${
               user.tag
@@ -129,7 +130,7 @@ ${presence.activities.join()}
               { online: "🟢", offline: "⭕", idle: "⏰", dnd: "⛔" }[
                 presence.status
               ]
-            }</h1><p id=d><table><tr><th>Guilds<td class=i id=g>${bot.guilds.cache.size.toLocaleString(
+            }</h1><p id=d onmouseover=clearInterval(u)><table><tr><th>Guilds<td class=i id=g>${bot.guilds.cache.size.toLocaleString(
               locale
             )}<tr><th title=latency>🏓<td><span class=i id=p>${bot.ws.ping.toLocaleString(
               locale
@@ -147,7 +148,7 @@ ${presence.activities.join()}
               }
             )} alt><a href=//discord.com/users/${owner.id}>${owner.tag}${
               owner.banner ? `<img src=${owner.bannerURL()} alt>` : ""
-            }<tr><th title=RAM>🆓🔀🧠<td><span class=i id=r>${ramAvailable()}</span>kB</table>${install}<p></div><div id=v><button type=button onclick="b^=1"><kbd>d</kbd>🤏🐛</button><p><pre>${`${readFileSync(
+            }<tr><th title=RAM>🆓🔀🧠<td><span class=i id=r>${ramAvailable()}</span>kB</table>${install}<p></div><div id=v><button type=button onclick=b^=1><kbd>d</kbd>🤏🐛</button><p><pre>${`${readFileSync(
               "log"
             )}`.replace(/(?<=^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs, (_, time) =>
               time
@@ -157,7 +158,7 @@ ${presence.activities.join()}
                 : ""
             )}</div><script>onkeydown=({key})=>{if(key=="d")document.querySelector("button").click()}
 let b,t,n,u,p=-new Date("1970T00:00"),s=${bot.readyTimestamp}+p
-function l(){let x=new XMLHttpRequest()
+function l(){let x=new XMLHttpRequest
 x.open("GET",\`\${b?'d':'e'}\${Intl.DateTimeFormat().resolvedOptions().timeZone}\`)
 x.onload=({srcElement:{responseText}})=>{document.querySelector("#v pre").innerText=responseText.replace(/.+?\\n/,a=>{r.innerText=a
 return""}).replace(/.+?\\n/,c=>{g.innerText=c
@@ -179,11 +180,10 @@ setInterval(()=>{document.querySelector('tr:nth-child(4) td').innerText=new Date
 n=setInterval(l,5e3)
 d.innerHTML=document.querySelector("meta[name^=d").content.replace(/&lt;t:(\\d+)(:[tdf])?&gt;/gi,(_,t,[,m])=>{const d=Date.prototype.toLocaleString.bind(new Date(+t),0)
 return\`<abbr title="\${d({timeStyle:"short",dateStyle:"full"})}">\${d({timeStyle:{t:"short",T:"long"}[m],dateStyle:{d:"short",D:"long"}[m]})}</abbr>\`})
-let f=new Intl.RelativeTimeFormat()
+let f=new Intl.RelativeTimeFormat
 ;(d.onmouseout=()=>u=setInterval(()=>d.innerHTML=d.innerHTML.replace(/&lt;t:(\\d+):R&gt;/g,(_,t)=>{t*=1000
 const r=t-Date.now()
 return\`<abbr title="\${new Date(+t).toLocaleString(0,{timeStyle:"short",dateStyle:"full"})}">\${r<-31536e6?f.format(r/31536e6,"year"):r<-7884e6?f.format(r/7884e6,"quarter"):r<-2628e6?f.format(r/2628e6,"month"):r<-6048e5?f.format(r/6048e5,"week"):r<-864e5?f.format(r/864e5,"day"):r<-36e5?f.format(r/36e5,"hour"):r<-6e4?f.format(r/6e4,"minute"):f.format(r/1e3,"second")}</abbr>\`}),1))()
-d.onmouseover=()=>clearInterval(u)
 </script>`
       );
     }).listen(80, "", () =>

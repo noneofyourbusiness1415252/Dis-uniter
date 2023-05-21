@@ -1,5 +1,6 @@
 node_modules
 .upm
+*.jsc
 package-lock.json
 log
 .breakpoints
