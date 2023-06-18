@@ -24,5 +24,8 @@
   "license": "ISC",
   "peerDependencies": {
     "discord.js": ">=13.7.0 <15"
+  },
+  "dependencies": {
+    "bytenode": "^1.4.1"
   }
 }
