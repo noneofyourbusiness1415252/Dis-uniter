@@ -4,7 +4,7 @@ const { createServer } = require("http"),
   css = String.raw,
   html = css,
   ramLimit = +`${readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes")}`,
-  { debug, error } = require("./utils");
+  logger = new (require("./utils").Logger)();
 let HTMLDescription, install;
 module.exports = (/**@type{Client<false>}*/ bot) => {
   async function fetchData(force) {
@@ -44,21 +44,29 @@ module.exports = (/**@type{Client<false>}*/ bot) => {
         )}&permissions=${installParams.permissions.bitfield}>Install</a>`
       : "";
   }
-  bot.on("warn", error);
-  bot.on("error", ({ message }) => error(message));
-  bot.on("debug", debug);
-  bot.on("interactionCreate", debug);
+  bot.on("warn", logger.error.bind(logger));
+  bot.on("error", ({ message }) => logger.error(message));
+  bot.on("debug", logger.debug.bind(logger));
+  bot.on("interactionCreate", logger.debug.bind(logger));
   bot.once("ready", async () => {
     await fetchData(false);
     const { application, user, presence } = bot;
     createServer(({ url, headers }, res) => {
-      const locale = headers["accept-language"]?.match(/[^,]+/)?.[0],
-        ramAvailable = () =>
+      let locale;
+      try {
+        locale = new Intl.Locale(
+          headers["accept-language"]?.match(/[a-z]+(?:-[a-z]+)?/i)
+        );
+      } catch ({ name }) {
+        res.writeHead(400, name).end();
+        return;
+      }
+      const ramAvailable = () =>
           (
             ramLimit -
             `${readFileSync("/sys/fs/cgroup/memory/memory.usage_in_bytes")}`
           ).toLocaleString(locale, { notation: "compact" }),
-        path = url[1],
+        [, path] = url,
         localiseTime = (time) =>
           new Date(+time).toLocaleString(locale, {
             timeZone: url.slice(2),
@@ -83,76 +91,36 @@ ${presence.activities}
       let timeZone,
         formatDate = (date) => date.toISOString(),
         timeZoneName = "short";
-      if (!path && locale) {
+      if (path == "?") {
+        res.end(
+          `${info()}${`${readFileSync("log")}`.replace(
+            /(?<=^⚠?)\d+/gm,
+            localiseTime
+          )}`
+        );
+        return;
+      }
+      if (path && path != ".") {
+        res.end(
+          `${info()}${`${readFileSync("log")}`.replace(
+            /(?<=^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs,
+            (_, time) => (time ? localiseTime(time) : "")
+          )}`
+        );
+        return;
+      }
+      if (locale) {
         formatDate = (date) =>
           date.toLocaleString(locale, { timeZone, timeZoneName });
-        let { timeZones } = new Intl.Locale(locale);
-        if (timeZones.length == 1) {
-          [timeZone] = timeZones;
-          timeZoneName = undefined;
-        }
+        try {
+          let { timeZones } = new Intl.Locale(locale);
+          if (timeZones.length == 1) {
+            [timeZone] = timeZones;
+            timeZoneName = undefined;
+          }
+        } catch {}
       }
-      res.end(
-        path == "e"
-          ? `${info()}${`${readFileSync("log")}`.replace(
-              /(?<=^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs,
-              (_, time) => (time ? localiseTime(time) : "")
-            )}`
-          : path == "d"
-          ? `${info()}${`${readFileSync("log")}`.replace(
-              /(?<=^⚠?)\d+/gm,
-              localiseTime
-            )}`
-          : url.endsWith("js")
-          ? `export default function(w){
-onkeydown=({key})=>{if(key=="d")v.querySelector("*").click()}
-let
-b,t,n,m,e=-new
-Date("1970T00:00"),s=w+e
-async function
-l(){v.querySelector("pre").innerText=(await(await
-fetch(\`\${b?'d':'e'}\${Intl.DateTimeFormat().resolvedOptions().timeZone}\`)).text()).replace(/.+?\\n/,a=>{r.innerText=a
-return""}).replace(/.+?\\n/,c=>{g.innerText=c
-return""}).replace(/.+?\\n/,c=>{p.innerText=c.slice(0,-1)
-return""}).replace(/.+?\\n/,t=>{t/=1
-u.innerText=new
-Date(t).toLocaleString()
-s=t+e
-return""}).replace(/.*?\\n/,p=>{a.innerText=p
-return""})}
-document.onvisibilitychange=()=>{if(document.visibilityState=="hidden"){clearInterval(n)
-clearInterval(m)}
-else{n=setInterval(l,5e3)
-d.onmouseout()}}
-let
-y=new
-Date().getFullYear()
-setInterval(()=>{o.querySelector(":nth-child(4)>td").innerText=new
-Date(Date.now()-s).toLocaleTimeString(0,{hourCycle:"h23"})},1e3)
-n=setInterval(l,5e3)
-d.innerHTML=document.querySelector("meta[name^=d").content.replace(/&lt;t:(\\d+)(:[tdf])?&gt;/gi,(_,t,[,m])=>{const
-d=Date.prototype.toLocaleString.bind(new
-Date(+t),0)
-return\`<abbr
-title="\${d({timeStyle:"short",dateStyle:"full"})}">\${d({timeStyle:{t:"short",T:"long"}[m],dateStyle:{d:"short",D:"long"}[m]})}</abbr>\`})
-let
-f=Intl.RelativeTimeFormat.prototype.format.bind(new
-Intl.RelativeTimeFormat())
-d.onmouseover=()=>clearInterval(m);(d.onmouseout=()=>m=setInterval(()=>d.innerHTML=d.innerHTML.replace(/&lt;t:(\\d+):R&gt;/g,(_,t)=>{t*=1000
-const
-r=t-Date.now()
-return\`<abbr
-title="\${new
-Date(+t).toLocaleString(0,{timeStyle:"short",dateStyle:"full"})}">\${r<-31536e6?f(r/31536e6,"year"):r<-7884e6?f(r/7884e6,"quarter"):r<-2628e6?f(r/2628e6,"month"):r<-6048e5?f(r/6048e5,"week"):r<-864e5?f(r/864e5,"day"):r<-36e5?f(r/36e5,"hour"):r<-6e4?f(r/6e4,"minute"):f(r/1e3,"second")}</abbr>\`}),1))()}`
-          : url.endsWith("css")
-          ? css`*{text-align:center;margin:0
-auto}blockquote>*{border-right:4px
-solid
-#007acc80;border-left:4px
-solid
-#007acc80;display:inline;padding:4px
-4px;border-radius:1px}#s{font-size:.1em}body,table{background:#FDF6E3;color:#657B83;font-family:sans-serif}button{background-color:#AC9D57}h1{color:#268BD2}@media(prefers-color-scheme:dark){body,table{background-color:#002B36;color:#839496}blockquote>*{border-color:#073642}button{background-color:#2AA19899}}img{height:1em}td{border:1px}p{white-space:pre-wrap}body{display:flex;flex-flow:row wrap;width:100vw}#o,#v{overflow:auto}#o{min-width:min-content;flex:1}#v{height:100vh;max-width:88ch}button{display:inline-block}a{color:#3794ff}.d,abbr{color:#cb4b16}.i{color:#D33682}code{color:#d7ba7d}i,b{color:#D33682}pre{white-space:pre-wrap`
-          : html`<!DOCTYPE
+      res.end(html`<!DOCTYPE
 html><meta
 charset=utf-8><meta
 name=viewport
@@ -166,63 +134,55 @@ content="${name} ${version}"><meta
 name=author
 content='${owner}'><meta
 name=og:image
-content=${user.avatarURL({ extension: "png" })}><title>${user.tag}</title><link
+content=${user.avatarURL({ size: 4096 })}><title>${user.tag}</title><link
 rel=icon
-href=${user.displayAvatarURL({
-              extension: "png",
-            })}><link rel=stylesheet
-href=.css><script
-type=module>import
-f
-from
-'./.js'
-f(${bot.readyTimestamp})</script><html
+href=${user.displayAvatarURL({ size: 16 })}><link rel=stylesheet
+href=//d.umarismyname.repl.co/v1/.css><script onload=f(${
+        bot.readyTimestamp
+      }) defer
+src=//d.umarismyname.repl.co/v1/.js></script><html
 lang=en><div
 id=o><h1>${user.tag}<img
-src='${bot.user.avatarURL({
-              extension: "png",
-            })}'alt><span
+width=32
+height=32
+src=${bot.user.avatarURL({ size: 32 })}
+alt><span
 id=s>${
-              { online: "🟢", offline: "⭕", idle: "⏰", dnd: "⛔" }[
-                presence.status
-              ]
-            }</h1><p
+        { online: "🟢", offline: "⭕", idle: "⏰", dnd: "⛔" }[presence.status]
+      }</h1><p
 id=d><table><tr><th>Guilds<td
 class=i
 id=g>${bot.guilds.cache.size.toLocaleString(locale, {
-              notation: "compact",
-            })}<tr><th
+        notation: "compact",
+      })}<tr><th
 title=latency>🏓<td><span
 class=i
 id=p>${bot.ws.ping.toLocaleString(locale)}</span>ms<tr><th>🎬<td
 class=d
 id=u>${formatDate(new Date(bot.readyTimestamp))}<tr><th>⏱️<td
 class=d>${new Date(Date.now() - bot.readyTimestamp).toLocaleTimeString(locale, {
-              hourCycle: "h23",
-            })}<tr><th
+        hourCycle: "h23",
+      })}<tr><th
 title=activity>🎮🏆👀👂<td
 id=a>${presence.activities}<tr><th>🏷️<td>${application.tags}<tr><th>👑<td><img
-src=${owner.displayAvatarURL({
-              extension: "png",
-            })}
+src=${owner.displayAvatarURL({ size: 16 })}
 alt><a
 href=//discord.com/users/${owner.id}>${owner.tag.replace(/#0$/g, "")}${
-              owner.banner
-                ? html`<img
-src=${owner.bannerURL()} alt>`
-                : ""
-            }<tr><th
+        owner.banner
+          ? html`<img src=${owner.bannerURL({ size: 16 })}
+alt>`
+          : ""
+      }<tr><th
 title=RAM>🆓🔀🧠<td><span
 class=i
 id=r>${ramAvailable()}</span></table>${install}<p></div><div
 id=v><button
 type=button
 onclick=b^=1><kbd>d</kbd>🤏🐛</button><p><pre>${`${readFileSync(
-              "log"
-            )}`.replace(/(?<=^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs, (_, time) =>
-              time ? formatDate(new Date(+time)) : ""
-            )}</div>`
-      );
+        "log"
+      )}`.replace(/(?<=^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs, (_, time) =>
+        time ? formatDate(new Date(+time)) : ""
+      )}</div>`);
     }).listen(80, "", () =>
       console.log(
         `${user.tag} is alive! Hit enter at any time to update user and application info to show on the website`
