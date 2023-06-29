@@ -1,6 +1,7 @@
 const { createServer } = require("http"),
   { readFileSync } = require("fs"),
   { version, name } = require("./package.json"),
+  html = String.raw,
   ramLimit = +`${readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes")}`,
   logger = new (require("./utils").Logger)();
 let HTMLDescription, install;
@@ -96,7 +97,7 @@ ${presence.activities}
           res.end(
             `${info()}${`${readFileSync("log")}`
               .replace(/(?<=^|\n)\d+: .*?\n(?=⚠|$)/gs, "")
-              .replace(/(?<=^⚠?)\d+/gm, localiseTime)}`
+              .replace(/(?<=^⚠)\d+/gm, localiseTime)}`
           );
           return;
         }
