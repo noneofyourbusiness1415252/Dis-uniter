@@ -15,7 +15,6 @@ channel = "unstable"
 [env]
 XDG_CONFIG_HOME = "/home/runner/.config"
 PATH = "node_modules/.bin"
-p = "prettier . -w\nnpm config set //registry.npmjs.org/:_authToken $NPM_TOKEN\nnpm publish"
 
 [packager]
 language = "nodejs"
