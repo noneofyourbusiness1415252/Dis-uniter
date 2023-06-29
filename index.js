@@ -1,8 +1,6 @@
 const { createServer } = require("http"),
   { readFileSync } = require("fs"),
   { version, name } = require("./package.json"),
-  css = String.raw,
-  html = css,
   ramLimit = +`${readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes")}`,
   logger = new (require("./utils").Logger)();
 let HTMLDescription, install;
@@ -47,66 +45,65 @@ module.exports = (/**@type{Client<false>}*/ bot) => {
   bot.on("warn", logger.error.bind(logger));
   bot.on("error", ({ message }) => logger.error(message));
   bot.on("debug", logger.debug.bind(logger));
-  bot.on("interactionCreate", logger.debug.bind(logger));
+  bot.on("interactionCreate", (interaction) => logger.debug(interaction));
   bot.once("ready", async () => {
     await fetchData(false);
     const { application, user, presence } = bot;
     createServer(({ url, headers }, res) => {
       let locale;
       try {
-        locale = new Intl.Locale(
-          headers["accept-language"]?.match(/[a-z]+(?:-[a-z]+)?/i)
-        );
-      } catch ({ name }) {
-        res.writeHead(400, name).end();
-        return;
-      }
+        locale = new Intl.Locale(headers["accept-language"]?.match(/[^,]*/));
+      } catch {}
       const ramAvailable = () =>
           (
             ramLimit -
             `${readFileSync("/sys/fs/cgroup/memory/memory.usage_in_bytes")}`
           ).toLocaleString(locale, { notation: "compact" }),
         [, path] = url,
-        localiseTime = (time) =>
-          new Date(+time).toLocaleString(locale, {
-            timeZone: url.slice(2),
-          }),
         info = () =>
           `${ramAvailable()}
-${bot.guilds.cache.size.toLocaleString(locale)}
+${bot.guilds.cache.size.toLocaleString(locale, { notation: "compact" })}
 ${bot.ws.ping.toLocaleString(locale)}
 ${bot.readyTimestamp}
 ${presence.activities}
 `,
-        /**@type{User}*/ owner =
-          application.owner.owner?.user ?? application.owner;
-      res.writeHead(200, {
-        "Content-Type":
-          { js: "text/javascript", css: "text/css" }[url.slice(2)] ??
-          `text/html;charset=utf-8`,
-        "Cache-Control":
-          { ".": "max-age=31536000", "": "max-age=180" }[path] ?? "no-cache",
-        "X-Content-Type-Options": "nosniff",
-      });
+        localiseTime = (time) =>
+          new Date(+time).toLocaleString(locale, {
+            timeZone,
+          });
+      /**@type{User}*/ owner =
+        application.owner.owner?.user ?? application.owner;
+      res
+        .setHeader("X-Content-Type-Options", "nosniff")
+        .setHeader("Content-Type", "text/plain;charset=utf-8")
+        .setHeader("Cache-Control", "no-cache");
       let timeZone,
         formatDate = (date) => date.toISOString(),
         timeZoneName = "short";
-      if (path == "?") {
-        res.end(
-          `${info()}${`${readFileSync("log")}`.replace(
-            /(?<=^⚠?)\d+/gm,
-            localiseTime
-          )}`
-        );
-        return;
-      }
-      if (path && path != ".") {
-        res.end(
-          `${info()}${`${readFileSync("log")}`.replace(
-            /(?<=^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs,
-            (_, time) => (time ? localiseTime(time) : "")
-          )}`
-        );
+      try {
+        if (path == "?") {
+          timeZone = url.slice(2);
+          res.end(
+            `${info()}${`${readFileSync("log")}`.replace(
+              /(?<=^⚠?)\d+/gm,
+              localiseTime
+            )}`
+          );
+          return;
+        }
+        if (path && path != ".") {
+          timeZone = url.slice(1);
+          res.end(
+            `${info()}${`${readFileSync("log")}`
+              .replace(/(?<=^|\n)\d+: .*?\n(?=⚠|$)/gs, "")
+              .replace(/(?<=^⚠?)\d+/gm, localiseTime)}`
+          );
+          return;
+        }
+      } catch ({ name, message }) {
+        res
+          .writeHead(404, name, { "Cache-Control": "max-age=180" })
+          .end(message);
         return;
       }
       if (locale) {
@@ -120,7 +117,9 @@ ${presence.activities}
           }
         } catch {}
       }
-      res.end(html`<!DOCTYPE
+      res
+        .setHeader("Content-Type", "text/html;charset=utf-8")
+        .setHeader("Cache-Control", "max-age=180").end(html`<!DOCTYPE
 html><meta
 charset=utf-8><meta
 name=viewport
@@ -137,10 +136,10 @@ name=og:image
 content=${user.avatarURL({ size: 4096 })}><title>${user.tag}</title><link
 rel=icon
 href=${user.displayAvatarURL({ size: 16 })}><link rel=stylesheet
-href=//d.umarismyname.repl.co/v1/.css><script onload=f(${
-        bot.readyTimestamp
-      }) defer
-src=//d.umarismyname.repl.co/v1/.js></script><html
+href=//d.umarismyname.repl.co/v1/.css><script
+onload=f(${bot.readyTimestamp})
+defer
+src=//d.umarismyname.repl.co/v2/.js></script><html
 lang=en><div
 id=o><h1>${user.tag}<img
 width=32
@@ -177,12 +176,9 @@ title=RAM>🆓🔀🧠<td><span
 class=i
 id=r>${ramAvailable()}</span></table>${install}<p></div><div
 id=v><button
-type=button
-onclick=b^=1><kbd>d</kbd>🤏🐛</button><p><pre>${`${readFileSync(
-        "log"
-      )}`.replace(/(?<=^|\n)\d+: .*?(?:\n⚠([0-9]+)|$)/gs, (_, time) =>
-        time ? formatDate(new Date(+time)) : ""
-      )}</div>`);
+type=button><kbd>d</kbd>🤏🐛</button><p><pre>${`${readFileSync("log")}`
+        .replace(/(?<=^|\n)\d+: .*?\n(?=⚠|$)/gs, "")
+        .replace(/(?<=^⚠?)\d+/gm, localiseTime)}</div>`);
     }).listen(80, "", () =>
       console.log(
         `${user.tag} is alive! Hit enter at any time to update user and application info to show on the website`
