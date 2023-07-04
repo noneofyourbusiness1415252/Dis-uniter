@@ -1,10 +1,8 @@
 {
   "name": "utils",
   "version": "0.0.0",
-  "types": "index.d.ts",
   "napi": {
-    "name": "index",
-    "triples": {}
+    "name": "index"
   },
   "license": "MIT",
   "devDependencies": {
@@ -25,10 +23,5 @@
     "test": "ava",
     "version": "napi version"
   },
-  "packageManager": "yarn@3.5.1",
-  "optionalDependencies": {
-    "utils-win32-x64-msvc": "0.0.0",
-    "utils-darwin-x64": "0.0.0",
-    "utils-linux-x64-gnu": "0.0.0"
-  }
+  "packageManager": "yarn@3.5.1"
 }
